@@ -16,14 +16,27 @@
 **************************************************************************/
 
 import React, { useEffect } from "react";
-import {Button, Heading, Flex, View, ComboBox, Item, TextField, Image} from '@adobe/react-spectrum';
+import {
+    Button, 
+    Heading, 
+    Flex, 
+    View, 
+    ComboBox, 
+    Item, 
+    TextField, 
+    Image,
+    ProgressCircle,
+    Text
+} from '@adobe/react-spectrum';
 import { getSignedURL, listObjects } from "~/utils/aws-client";
 import { initSDK } from "~/utils/ps-api-client";
 import psApiLib from '@adobe/aio-lib-photoshop-api';
 import { displayError} from "~/utils/display-utils";
+import { getFileType, FILETYPE } from "../../utils/file-utils";
 
 const CreateMask = () => {
     const [fileList, setFileList] = React.useState([]);
+    const [isBusy, setIsBusy] = React.useState(false);
     const [inputFileName, setInputFileName] = React.useState(null);
     const [outputFileName, setOuputFileName] = React.useState(null);
     const [imageSrc, setImageSrc] = React.useState(null);
@@ -36,6 +49,7 @@ const CreateMask = () => {
             displayError('Input file and output filename must be provided');
         } else {
             try {
+                setIsBusy(true);
                 const input = {
                     href: inputImageURL,
                     storage: psApiLib.Storage.EXTERNAL,
@@ -48,7 +62,9 @@ const CreateMask = () => {
                   await sdk.createMask(input, output);
                   const imageURL = await getSignedURL('getObject', `output/${outputFileName}`);
                   setImageSrc(imageURL);
+                  setIsBusy(false);
             } catch (e) {
+                setIsBusy(false);
                 console.log(e);
                 displayError(`Create Mask Error: ${e}`);
             }
@@ -59,7 +75,12 @@ const CreateMask = () => {
         const files = await listObjects('inputs');
         const result = [];
         files.map((file, index) => {
-            result.push({id: index, name: file.Key.split('/')[1]});
+            if (!file.Key.endsWith('/')){
+                const fileName = file.Key.split('/')[1];
+                if(getFileType(fileName) === FILETYPE.image) {
+                    result.push({id: index, name: fileName});
+                } 
+            }
         });
         setFileList(result);
     }
@@ -82,7 +103,10 @@ const CreateMask = () => {
                     {item => <Item>{item.name}</Item>}
                 </ComboBox>
                 <TextField label='Output Image File Name' name='outputFileName' isRequired onChange={setOuputFileName}/>
-                <Button variant='cta' onPress={() => createCutout()}>Create Mask</Button>
+                <Button variant='cta' onPress={() => createCutout()}>
+                    <Text>Create Mask</Text>
+                    {isBusy ? <ProgressCircle size='S' isIndeterminate/> : null}
+                </Button>
             </Flex>
             <Flex direction={'row'} gap={20} alignItems={'end'}>
                 <View>

@@ -16,13 +16,25 @@
 **************************************************************************/
 
 import React, { useEffect } from "react";
-import {Button, Heading, Flex, View, ComboBox, Item, TextField, Image} from '@adobe/react-spectrum';
+import {
+    Button, 
+    Heading, 
+    Flex, 
+    View, 
+    ComboBox, 
+    Item, 
+    TextField, 
+    Image,
+    ProgressCircle,
+    Text} from '@adobe/react-spectrum';
 import { getSignedURL, listObjects } from "~/utils/aws-client";
 import { initSDK } from "~/utils/ps-api-client";
 import psApiLib from '@adobe/aio-lib-photoshop-api';
 import { displayError} from "~/utils/display-utils";
+import { getFileType, FILETYPE } from "../../utils/file-utils";
 
 const ApplyPhotoshopActions = () => {
+    const [isBusy, setIsBusy] = React.useState(false);
     const [fileList, setFileList] = React.useState([]);
     const [actionList, setActionList] = React.useState([]);
     const [inputFileName, setInputFileName] = React.useState(null);
@@ -38,6 +50,7 @@ const ApplyPhotoshopActions = () => {
             displayError('Input file, preset file and output filename must be provided');
         } else {
             try {
+                setIsBusy(true);
                 const input = {
                     href: inputImageURL,
                     storage: psApiLib.Storage.EXTERNAL,
@@ -58,7 +71,9 @@ const ApplyPhotoshopActions = () => {
                   await sdk.applyPhotoshopActions(input, output, options);
                   const imageURL = await getSignedURL('getObject', `output/${outputFileName}`);
                   setImageSrc(imageURL);
+                  setIsBusy(false);
             } catch (e) {
+                setIsBusy(false);
                 console.log(e);
                 displayError(`Create Mask Error: ${e}`);
             }
@@ -70,11 +85,13 @@ const ApplyPhotoshopActions = () => {
         const images = [];
         const actions = [];
         files.map((file, index) => {
-            const filename = file.Key.split('/')[1];
-            if(filename.toLowerCase().endsWith('atn')) {
-                actions.push({id:index, name: filename});
-            } else if(!filename.toLowerCase().endsWith('psd') && !filename.toLowerCase().endsWith('xmp') ) {
-                images.push({id:index, name: filename})
+            if (!file.Key.endsWith('/')){
+                const fileName = file.Key.split('/')[1];
+                if(getFileType(fileName) === FILETYPE.action) {
+                    actions.push({id: index, name: fileName});
+                }  else if(getFileType(fileName) === FILETYPE.image) {
+                    images.push({id:index, name: fileName});
+                }
             }
         });
         setFileList(images);
@@ -102,7 +119,10 @@ const ApplyPhotoshopActions = () => {
                     {item => <Item>{item.name}</Item>}
                 </ComboBox>
                 <TextField label='Output Image File Name' name='outputFileName' isRequired onChange={setOuputFileName}/>
-                <Button variant='cta' onPress={() => applyActions()}>Apply Actions</Button>
+                <Button variant='cta' onPress={() => applyActions()}>
+                    {isBusy ? <ProgressCircle size='S' isIndeterminate/> : null}
+                    <Text>Apply Actions</Text>
+                </Button>
             </Flex>
             <Flex direction={'row'} gap={20} alignItems={'end'}>
                 <View>

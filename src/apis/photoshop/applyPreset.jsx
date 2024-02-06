@@ -16,13 +16,26 @@
 **************************************************************************/
 
 import React, { useEffect } from "react";
-import {Button, Heading, Flex, View, ComboBox, Item, TextField, Image} from '@adobe/react-spectrum';
+import {
+    Button, 
+    Heading, 
+    Flex, 
+    View, 
+    ComboBox, 
+    Item, 
+    TextField, 
+    Image,
+    ProgressCircle,
+    Text
+} from '@adobe/react-spectrum';
 import { getSignedURL, listObjects } from "~/utils/aws-client";
 import { initSDK } from "~/utils/ps-api-client";
 import psApiLib from '@adobe/aio-lib-photoshop-api';
 import { displayError} from "~/utils/display-utils";
+import { getFileType, FILETYPE } from "../../utils/file-utils";
 
 const ApplyPresetFile = () => {
+    const [isBusy, setIsBusy] = React.useState(false);
     const [fileList, setFileList] = React.useState([]);
     const [presetList, setPresetList] = React.useState([]);
     const [inputFileName, setInputFileName] = React.useState(null);
@@ -38,6 +51,7 @@ const ApplyPresetFile = () => {
             displayError('Input file, preset file and output filename must be provided');
         } else {
             try {
+                setIsBusy(true);
                 const input = {
                     href: inputImageURL,
                     storage: psApiLib.Storage.EXTERNAL,
@@ -54,7 +68,9 @@ const ApplyPresetFile = () => {
                   await sdk.applyPreset(input, preset, output);
                   const imageURL = await getSignedURL('getObject', `output/${outputFileName}`);
                   setImageSrc(imageURL);
+                  setIsBusy(false);
             } catch (e) {
+                setIsBusy(false);
                 console.log(e);
                 displayError(`Create Mask Error: ${e}`);
             }
@@ -66,12 +82,15 @@ const ApplyPresetFile = () => {
         const images = [];
         const presets = [];
         files.map((file, index) => {
-            const filename = file.Key.split('/')[1];
-            if(filename.toLowerCase().endsWith('xmp')) {
-                presets.push({id:index, name: filename});
-            } else {
-                images.push({id:index, name: filename})
+            if(!file.Key.endsWith('/')) {
+                const filename = file.Key.split('/')[1];
+                if(getFileType(filename) === FILETYPE.preset) {
+                    presets.push({id:index, name: filename});
+                } else if (getFileType(filename) === FILETYPE.image) {
+                    images.push({id:index, name: filename})
+                }
             }
+            
         });
         setFileList(images);
         setPresetList(presets);
@@ -98,7 +117,10 @@ const ApplyPresetFile = () => {
                     {item => <Item>{item.name}</Item>}
                 </ComboBox>
                 <TextField label='Output Image File Name' name='outputFileName' isRequired onChange={setOuputFileName}/>
-                <Button variant='cta' onPress={() => applyPreset()}>Apply Preset</Button>
+                <Button variant='cta' onPress={() => applyPreset()}>
+                    <Text>Apply Preset</Text>
+                    {isBusy ? <ProgressCircle size='S' isIndeterminate/> : null}
+                </Button>
             </Flex>
             <Flex direction={'row'} gap={20} alignItems={'end'}>
                 <View>
