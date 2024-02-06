@@ -1,0 +1,13 @@
+html, 
+body {
+    margin:0px;
+    height: 100vh;
+}
+
+.applicationContentWrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--spectrum-gray-200);
+    height: 100vh;
+  }
