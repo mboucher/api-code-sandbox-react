@@ -22,51 +22,51 @@ import {
     Flex, 
     View, 
     ComboBox, 
-    Item, 
-    TextField, 
+    Item,  
     Image,
+    Text,
     ProgressCircle,
-    Text
+    Link
 } from '@adobe/react-spectrum';
 import { getSignedURL, listObjects } from "~/utils/aws-client";
 import { initSDK } from "~/utils/ps-api-client";
 import psApiLib from '@adobe/aio-lib-photoshop-api';
 import { displayError} from "~/utils/display-utils";
-import { getFileType, FILETYPE } from "../../utils/file-utils";
+import { getFileType, FILETYPE, getUUID } from "../../utils/file-utils";
 
-const ApplyPresetFile = () => {
+const EditPhoto = () => {
     const [isBusy, setIsBusy] = React.useState(false);
     const [fileList, setFileList] = React.useState([]);
-    const [presetList, setPresetList] = React.useState([]);
     const [inputFileName, setInputFileName] = React.useState(null);
-    const [inputPresetFileName, setInputpresetFileName] = React.useState(null);
-    const [outputFileName, setOuputFileName] = React.useState(null);
     const [imageSrc, setImageSrc] = React.useState(null);
     const [inputImageURL, setInputImageURL] = React.useState(null);
 
 
-    const applyPreset = async () => {
+    const editPhoto = async () => {
         const sdk = await initSDK();
-        if(inputFileName === null || outputFileName === null || inputPresetFileName === null) {
-            displayError('Input file, preset file and output filename must be provided');
+        if(inputFileName === null ) {
+            displayError('Input file must be provided');
         } else {
             try {
+                const fileID = getUUID();
                 setIsBusy(true);
+                const options = {
+                    Exposure: 0.50,
+                    Contrast: 10,
+                    WhiteBalance: "Auto"
+                  }
+
                 const input = {
                     href: inputImageURL,
                     storage: psApiLib.Storage.EXTERNAL,
                   }
-                  const preset = {
-                    href:  await getSignedURL('getObject', `inputs/${inputPresetFileName}`),
-                    storage: psApiLib.Storage.EXTERNAL,
-                  }
                   const output = {
-                    href: await getSignedURL('putObject', `output/${outputFileName}`),
+                    href: await getSignedURL('putObject', `output/${fileID}.png`),
                     storage: psApiLib.Storage.EXTERNAL,
                     type: psApiLib.MimeType.PNG
                   }
-                  await sdk.applyPreset(input, preset, output);
-                  const imageURL = await getSignedURL('getObject', `output/${outputFileName}`);
+                  await sdk.editPhoto(input, output, options);
+                  const imageURL = await getSignedURL('getObject', `output/${fileID}.png`);
                   setImageSrc(imageURL);
                   setIsBusy(false);
             } catch (e) {
@@ -80,20 +80,16 @@ const ApplyPresetFile = () => {
     const getFileList = async () => {
         const files = await listObjects('inputs');
         const images = [];
-        const presets = [];
         files.map((file, index) => {
-            if(!file.Key.endsWith('/')) {
+            if(!file.Key.endsWith('/')){
                 const filename = file.Key.split('/')[1];
-                if(getFileType(filename) === FILETYPE.preset) {
-                    presets.push({id:index, name: filename});
-                } else if (getFileType(filename) === FILETYPE.image) {
+                if(getFileType(filename) === FILETYPE.image) {
                     images.push({id:index, name: filename})
                 }
             }
             
         });
         setFileList(images);
-        setPresetList(presets);
     }
 
     useEffect(() => {
@@ -108,17 +104,21 @@ const ApplyPresetFile = () => {
 
     return(
         <Flex direction={'column'} gap={10}>
-            <Heading level={1}>Apply Preset</Heading>
+            <Flex direction={'column'}>
+                <Heading level={1}>Edit Photo</Heading>
+                <Text>
+                    Makes predefined edits to the selected image. To know more about this feature refer <Link href="https://developer.adobe.com/photoshop/photoshop-api-docs/features/#edit">Edit</Link>
+                </Text>
+                <Heading level={3}>Instructions:</Heading>
+                <Text>In this example, we are making changes to the exposure, contrast and white balance settings.</Text>
+                <Text>You can supply additional Photoshop action files using the <Link href="/uploadtoS3">Upload Asset to S3 page</Link>.</Text>
+            </Flex>
             <Flex direction={'row'} gap={10} alignItems={'end'}>
                 <ComboBox label='Select an input image' defaultItems={fileList} isRequired onInputChange={handleInputImageSelection}>
                     {item => <Item>{item.name}</Item>}
                 </ComboBox>
-                <ComboBox label='Select a preset XMP file' defaultItems={presetList} isRequired onInputChange={setInputpresetFileName}>
-                    {item => <Item>{item.name}</Item>}
-                </ComboBox>
-                <TextField label='Output Image File Name' name='outputFileName' isRequired onChange={setOuputFileName}/>
-                <Button variant='cta' onPress={() => applyPreset()}>
-                    <Text>Apply Preset</Text>
+                <Button variant='cta' onPress={() => editPhoto()}>
+                    <Text>Apply Edits</Text>
                     {isBusy ? <ProgressCircle size='S' isIndeterminate/> : null}
                 </Button>
             </Flex>
@@ -129,7 +129,9 @@ const ApplyPresetFile = () => {
                         {inputImageURL !== null && 
                         <>
                             <Heading>Selected Input Image</Heading>
-                            <Image src={inputImageURL}/>
+                            <Flex width="100%" maxHeigt="400">
+                                <Image src={inputImageURL} objectFit="cover"/>
+                            </Flex>
                         </>
                         }
                     </Flex>
@@ -139,7 +141,9 @@ const ApplyPresetFile = () => {
                     {imageSrc !== null &&
                         <>
                             <Heading>Result from Photoshop API</Heading>
-                            <Image src={imageSrc}/>
+                            <Flex width="100%" maxHeigt="400">
+                                <Image src={imageSrc} objectFit="cover"/>
+                            </Flex>
                         </>
                     }
                 </View>
@@ -148,4 +152,4 @@ const ApplyPresetFile = () => {
         </Flex>
     );
 }
-export default ApplyPresetFile;
+export default EditPhoto;

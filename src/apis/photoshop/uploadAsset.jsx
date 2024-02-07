@@ -58,7 +58,11 @@ const UploadAssetS3 = () => {
         const results = await listObjects('inputs');
         const updatedArray = [];
         results.map((file, index) => {
-            updatedArray.push({id: index, Key: file.Key, LastModified: `${file.LastModified}`, Size: file.Size});
+            if(!file.Key.endsWith('/')){
+                const fileName = file.Key.split('/')[1];
+                updatedArray.push({id: index, Key: fileName, LastModified: `${file.LastModified}`, Size: file.Size});
+            }
+           
         })
         setFileList(updatedArray);
     }
@@ -80,11 +84,12 @@ const UploadAssetS3 = () => {
 
 
     return(
-        <Flex direction={'column'} gap={10}>
+        <Flex direction={'column'} gap={20}>
             <View>
                 <Heading level={1}>Upload Asset to AWS S3</Heading>
                 <Content>
-                    <Text>Some descriptive content.</Text>
+                    <Heading level={3}>Insctructions</Heading>
+                    <Text>This is a list of the files availables in AWS S3. These files can be used in the Photoshop API calls. You are welcome to upload new files to test with. Simply click on the "Select a file" button to add to this folder. </Text>
                 </Content>
             </View>
             <View>

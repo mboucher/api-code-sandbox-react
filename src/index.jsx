@@ -27,14 +27,11 @@ import {
 import { ToastContainer } from '@react-spectrum/toast';
 import NavBar from './nav-bar';
 import './styles.css';
+import LandingPage from './landing';
+// Photoshop API Pages
 import RemoveBackgroundView from './apis/photoshop/removeBackground';
 import UploadAssetS3 from './apis/photoshop/uploadAsset';
 import CreateMask from './apis/photoshop/createMask';
-import AutoTone from './apis/photoshop/autoTone';
-import StraightenImage from './apis/photoshop/straighten';
-import ApplyPreset from './apis/photoshop/applyPreset';
-import ApplyPresetXMP from './apis/photoshop/applyPresetXMP';
-import EditPhoto from './apis/photoshop/editPhoto';
 import CreateRendition from './apis/photoshop/createRendition';
 import CreatePSDDocument from './apis/photoshop/createPSDDocument';
 import ReplaceSmartObject from './apis/photoshop/replaceSmartObject';
@@ -42,6 +39,15 @@ import GetDocumentManifest from './apis/photoshop/getDocumentManifest';
 import ModifyDocument from './apis/photoshop/modifyDocument';
 import ApplyPhotoshopActions from './apis/photoshop/applyPhotoshopActions';
 import ApplyPhotoshopActionsJSON from './apis/photoshop/applyPhotoshopActionsJson';
+// Lightroom API Pages
+import ApplyPreset from './apis/lightroom/applyPreset';
+import ApplyPresetXMP from './apis/lightroom/applyPresetXMP';
+import AutoTone from './apis/lightroom/autoTone';
+import StraightenImage from './apis/lightroom/straighten';
+import EditPhoto from './apis/lightroom/editPhoto';
+
+// Firefly API Pages
+import ImportImage from './apis/firefly/uploadImage';
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement);
@@ -63,6 +69,7 @@ root.render(
                             <View height='100%' margin={40}>
                                 <BrowserRouter>
                                     <Routes>
+                                        <Route path='/' element={<LandingPage/>}/>
                                         <Route path='removeBackground' element={<RemoveBackgroundView/>}/>
                                         <Route path='uploadtoS3' element={<UploadAssetS3/>}/>
                                         <Route path='createMask' element={<CreateMask/>}/>
@@ -78,6 +85,7 @@ root.render(
                                         <Route path='modifyDocument' element={<ModifyDocument/>}/>
                                         <Route path='applyPhotoshopActions' element={<ApplyPhotoshopActions/>}/>
                                         <Route path='applyPhotoshopActionsJSON' element={<ApplyPhotoshopActionsJSON/>}/>
+                                        <Route path='uploadImage' element={<ImportImage/>}/>
                                     </Routes>
                                 </BrowserRouter>
                             </View>

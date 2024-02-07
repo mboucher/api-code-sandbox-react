@@ -54,10 +54,6 @@ const NavBar = () => {
                     <Item key="uploadtoS3">Upload Asset to S3</Item>
                     <Item key="removeBackground">Remove Background</Item>
                     <Item key="createMask">Create Mask</Item>
-                    <Item key="autoTone">Auto Tone</Item>
-                    <Item key="straighten">Straighten</Item>
-                    <Item key="applyPreset">Apply Preset</Item>
-                    <Item key="applyPresetXMP">Apply Preset XMP</Item>
                     <Item key="editPhoto">Edit Photo</Item>
                     <Item key="createRendition">Create Renditions</Item>
                     <Item key="createPSDDocument">Create PSD Document</Item>
@@ -70,10 +66,23 @@ const NavBar = () => {
             </MenuTrigger>
             <MenuTrigger>
                 <ActionButton isQuiet>
+                    Lightroom APIs
+                </ActionButton>
+                <Menu onAction={(key) => handleNavSelection(key)}>
+                    <Item key="uploadtoS3">Upload Asset to S3</Item>
+                    <Item key="autoTone">Auto Tone</Item>
+                    <Item key="straighten">Straighten</Item>
+                    <Item key="applyPreset">Apply Preset</Item>
+                    <Item key="applyPresetXMP">Apply Preset XMP</Item>
+                </Menu>
+            </MenuTrigger>
+            <MenuTrigger>
+                <ActionButton isQuiet>
                     Firefly APIs
                 </ActionButton>
                 <Menu onAction={(key) => handleNavSelection(key)}>
                     <Item>Coming Soon</Item>
+                    <Item key="uploadImage">Import Image to Firefly</Item>
                 </Menu>
             </MenuTrigger>
             </View>

@@ -23,7 +23,7 @@ import {
     View, 
     ComboBox, 
     Item, 
-    TextField, 
+    Link, 
     Image,
     Text,
     ProgressCircle
@@ -32,47 +32,42 @@ import { getSignedURL, listObjects } from "~/utils/aws-client";
 import { initSDK } from "~/utils/ps-api-client";
 import psApiLib from '@adobe/aio-lib-photoshop-api';
 import { displayError} from "~/utils/display-utils";
-import { getFileType, FILETYPE } from "../../utils/file-utils";
+import { getFileType, FILETYPE, getUUID } from "../../utils/file-utils";
 
-const EditPhoto = () => {
+const ApplyPresetXMP = () => {
     const [isBusy, setIsBusy] = React.useState(false);
     const [fileList, setFileList] = React.useState([]);
     const [inputFileName, setInputFileName] = React.useState(null);
-    const [outputFileName, setOuputFileName] = React.useState(null);
     const [imageSrc, setImageSrc] = React.useState(null);
     const [inputImageURL, setInputImageURL] = React.useState(null);
 
 
-    const editPhoto = async () => {
+    const applyPresetXMP = async () => {
         const sdk = await initSDK();
-        if(inputFileName === null || outputFileName === null) {
-            displayError('Input file, preset file and output filename must be provided');
+        if(inputFileName === null ) {
+            displayError('Input file must be provided');
         } else {
             try {
                 setIsBusy(true);
-                const options = {
-                    Exposure: 0.50,
-                    Contrast: 10,
-                    WhiteBalance: "Auto"
-                  }
-
+                const fileID = getUUID();
+                const options = '<?xml version="1.0"?><x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.6-c140 79.160451, 2017/05/06-01:08:21        "><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/" rdf:about="" crs:PresetType="Normal" crs:Cluster="" crs:UUID="47D5B8888456439D852D7CD225450652" crs:SupportsAmount="False" crs:SupportsColor="True" crs:SupportsMonochrome="True" crs:SupportsHighDynamicRange="True" crs:SupportsNormalDynamicRange="True" crs:SupportsSceneReferred="True" crs:SupportsOutputReferred="True" crs:CameraModelRestriction="" crs:Copyright="" crs:ContactInfo="" crs:Version="12.2.1" crs:ProcessVersion="11.0" crs:ConvertToGrayscale="True" crs:AutoGrayscaleMix="True" crs:CameraProfile="Default Monochrome" crs:HasSettings="True"><crs:Name><rdf:Alt><rdf:li xml:lang="x-default">Auto-BW</rdf:li></rdf:Alt></crs:Name><crs:ShortName><rdf:Alt><rdf:li xml:lang="x-default"/></rdf:Alt></crs:ShortName><crs:SortName><rdf:Alt><rdf:li xml:lang="x-default"/></rdf:Alt></crs:SortName><crs:Group><rdf:Alt><rdf:li xml:lang="x-default"/></rdf:Alt></crs:Group><crs:Description><rdf:Alt><rdf:li xml:lang="x-default"/></rdf:Alt></crs:Description><crs:Look crs:Name=""/></rdf:Description></rdf:RDF></x:xmpmeta>';
                 const input = {
                     href: inputImageURL,
                     storage: psApiLib.Storage.EXTERNAL,
                   }
                   const output = {
-                    href: await getSignedURL('putObject', `output/${outputFileName}`),
+                    href: await getSignedURL('putObject', `output/${fileID}.png`),
                     storage: psApiLib.Storage.EXTERNAL,
                     type: psApiLib.MimeType.PNG
                   }
-                  await sdk.editPhoto(input, output, options);
-                  const imageURL = await getSignedURL('getObject', `output/${outputFileName}`);
+                  await sdk.applyPresetXmp(input, output, options);
+                  const imageURL = await getSignedURL('getObject', `output/${fileID}.png`);
                   setImageSrc(imageURL);
                   setIsBusy(false);
             } catch (e) {
                 setIsBusy(false);
                 console.log(e);
-                displayError(`Create Mask Error: ${e}`);
+                displayError(`Apply Preset XMP Error: ${e}`);
             }
         }
     }
@@ -104,14 +99,21 @@ const EditPhoto = () => {
 
     return(
         <Flex direction={'column'} gap={10}>
-            <Heading level={1}>Edit Photo</Heading>
+            <Flex direction={'column'}>
+                <Heading level={1}>Apply Preset XMP</Heading>
+                <Text>
+                Apply a Lightroom preset to an image, by passing in the preset XMP contents inline through the API. To know more about this feature refer <Link href="https://developer.adobe.com/photoshop/photoshop-api-docs/features/#xmp">Preset XMP</Link>
+                </Text>
+                <Heading level={3}>Instructions:</Heading>
+                <Text>In this example, we are applying greyscale via the XMP preset in code.</Text>
+                <Text>You can supply additional Photoshop action files using the <Link href="/uploadtoS3">Upload Asset to S3 page</Link>.</Text>
+            </Flex>
             <Flex direction={'row'} gap={10} alignItems={'end'}>
                 <ComboBox label='Select an input image' defaultItems={fileList} isRequired onInputChange={handleInputImageSelection}>
                     {item => <Item>{item.name}</Item>}
                 </ComboBox>
-                <TextField label='Output Image File Name' name='outputFileName' isRequired onChange={setOuputFileName}/>
-                <Button variant='cta' onPress={() => editPhoto()}>
-                    <Text>Apply Edits</Text>
+                <Button variant='cta' onPress={() => applyPresetXMP()}>
+                    <Text>Apply Preset</Text>
                     {isBusy ? <ProgressCircle size='S' isIndeterminate/> : null}
                 </Button>
             </Flex>
@@ -122,7 +124,9 @@ const EditPhoto = () => {
                         {inputImageURL !== null && 
                         <>
                             <Heading>Selected Input Image</Heading>
-                            <Image src={inputImageURL}/>
+                            <Flex width="100%" maxHeigt="400">
+                                <Image src={inputImageURL} objectFit="cover"/>
+                            </Flex>
                         </>
                         }
                     </Flex>
@@ -132,7 +136,10 @@ const EditPhoto = () => {
                     {imageSrc !== null &&
                         <>
                             <Heading>Result from Photoshop API</Heading>
-                            <Image src={imageSrc}/>
+                            <Flex width="100%" maxHeigt="400">
+                                <Image src={imageSrc} objectFit="cover"/>
+                            </Flex>
+                            
                         </>
                     }
                 </View>
@@ -141,4 +148,4 @@ const EditPhoto = () => {
         </Flex>
     );
 }
-export default EditPhoto;
+export default ApplyPresetXMP;

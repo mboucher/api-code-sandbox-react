@@ -26,13 +26,14 @@ import {
     TextField,
     Image,
     ProgressCircle,
-    Text
+    Text,
+    Link
 } from '@adobe/react-spectrum';
 import { getSignedURL, listObjects } from "~/utils/aws-client";
 import { initSDK } from "~/utils/ps-api-client";
 import psApiLib from '@adobe/aio-lib-photoshop-api';
 import { displayError} from "~/utils/display-utils";
-import { getFileType, FILETYPE } from "../../utils/file-utils";
+import { getFileType, FILETYPE, getUUID } from "../../utils/file-utils";
 
 const ApplyPhotoshopActionsJSON = () => {
     const [isBusy, setIsBusy] = React.useState(false);
@@ -40,22 +41,29 @@ const ApplyPhotoshopActionsJSON = () => {
     const [actionList, setActionList] = React.useState([]);
     const [inputFileName, setInputFileName] = React.useState(null);
     const [inputAdditionalFileName, setInputAdditionalFileName] = React.useState(null);
-    const [outputFileName, setOuputFileName] = React.useState(null);
     const [imageSrc, setImageSrc] = React.useState(null);
     const [inputImageURL, setInputImageURL] = React.useState(null);
 
 
     const applyActions = async () => {
         const sdk = await initSDK();
-        if(inputFileName === null || outputFileName === null || inputAdditionalFileName === null) {
-            displayError('Input file, preset file and output filename must be provided');
+        if(inputFileName === null  || inputAdditionalFileName === null) {
+            displayError('Input file and additional file must be provided');
         } else {
             try {
                 setIsBusy(true);
+                const fileID = getUUID();
                 const input = {
                     href: inputImageURL,
                     storage: psApiLib.Storage.EXTERNAL,
                   }
+
+                /*
+                actionJson performs:
+                - apply traceContour filter to the original image
+                - place the additional image in a new layer (note the placeholder ACTION_JSON_OPTIONS_ADDITIONAL_IMAGES_0 for path field) and resize
+                - rename the newly created layer
+                */
                 const options = {
                 actionJSON: [
                     {
@@ -123,12 +131,12 @@ const ApplyPhotoshopActionsJSON = () => {
                 ]
                 }
                   const output = {
-                    href: await getSignedURL('putObject', `output/${outputFileName}`),
+                    href: await getSignedURL('putObject', `output/${fileID}.png`),
                     storage: psApiLib.Storage.EXTERNAL,
                     type: psApiLib.MimeType.PNG
                   }
                   await sdk.applyPhotoshopActionsJson(input, output, options);
-                  const imageURL = await getSignedURL('getObject', `output/${outputFileName}`);
+                  const imageURL = await getSignedURL('getObject', `output/${fileID}.png`);
                   setImageSrc(imageURL);
                   setIsBusy(false);
             } catch (e) {
@@ -169,7 +177,15 @@ const ApplyPhotoshopActionsJSON = () => {
 
     return(
         <Flex direction={'column'} gap={10}>
-            <Heading level={1}>Apply Photoshop Actions</Heading>
+            <Flex direction={'column'}>
+                <Heading level={1}>Apply Photoshop Actions JSON</Heading>
+                <Text>
+                    Executes Photoshop Actions on the selected image. To know more about this feature refer <Link href="https://developer.adobe.com/photoshop/photoshop-api-docs/features/#photoshop-actions">Photoshop Actions</Link>
+                </Text>
+                <Heading level={3}>Instructions:</Heading>
+                <Text>In this example, the a JSON is passed to the Photoshop API which contains instructions execute a traceContour on the original image, place the additional image as a new resized layer. Then rename the layer.</Text>
+                <Text>You can supply additional Photoshop action files using the <Link href="/uploadtoS3">Upload Asset to S3 page</Link>.</Text>
+            </Flex>
             <Flex direction={'row'} gap={10} alignItems={'end'}>
                 <ComboBox label='Select an input image' defaultItems={fileList} isRequired onInputChange={handleInputImageSelection}>
                     {item => <Item>{item.name}</Item>}
@@ -177,7 +193,6 @@ const ApplyPhotoshopActionsJSON = () => {
                 <ComboBox label='Select an additional file' defaultItems={fileList} isRequired onInputChange={setInputAdditionalFileName}>
                     {item => <Item>{item.name}</Item>}
                 </ComboBox>
-                <TextField label='Output Image File Name' name='outputFileName' isRequired onChange={setOuputFileName}/>
                 <Button variant='cta' onPress={() => applyActions()}>
                     {isBusy ? <ProgressCircle size='S' isIndeterminate/> : null}
                     <Text>Apply Actions</Text>
@@ -190,7 +205,9 @@ const ApplyPhotoshopActionsJSON = () => {
                         {inputImageURL !== null && 
                         <>
                             <Heading>Selected Input Image</Heading>
-                            <Image src={inputImageURL}/>
+                            <Flex width="100%" maxHeigt="400">
+                                <Image src={inputImageURL} objectFit="cover"/>
+                            </Flex>
                         </>
                         }
                     </Flex>
@@ -200,7 +217,9 @@ const ApplyPhotoshopActionsJSON = () => {
                     {imageSrc !== null &&
                         <>
                             <Heading>Result from Photoshop API</Heading>
-                            <Image src={imageSrc}/>
+                            <Flex width="100%" maxHeigt="400">
+                                <Image src={imageSrc} objectFit="cover"/>
+                            </Flex>
                         </>
                     }
                 </View>

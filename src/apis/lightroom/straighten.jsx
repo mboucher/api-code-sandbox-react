@@ -26,47 +26,48 @@ import {
     TextField, 
     Image,
     Text,
-    ProgressCircle
+    ProgressCircle,
+    Link
 } from '@adobe/react-spectrum';
 import { getSignedURL, listObjects } from "~/utils/aws-client";
 import { initSDK } from "~/utils/ps-api-client";
 import psApiLib from '@adobe/aio-lib-photoshop-api';
 import { displayError} from "~/utils/display-utils";
-import { getFileType, FILETYPE } from "../../utils/file-utils";
+import { getFileType, FILETYPE, getUUID } from "../../utils/file-utils";
 
-const AutoTone = () => {
+const StraightenImage = () => {
     const [isBusy, setIsBusy] = React.useState(false);
     const [fileList, setFileList] = React.useState([]);
     const [inputFileName, setInputFileName] = React.useState(null);
-    const [outputFileName, setOuputFileName] = React.useState(null);
     const [imageSrc, setImageSrc] = React.useState(null);
     const [inputImageURL, setInputImageURL] = React.useState(null);
 
 
-    const autoTone = async () => {
+    const straighten = async () => {
         const sdk = await initSDK();
-        if(inputFileName === null || outputFileName === null) {
-            displayError('Input file and output filename must be provided');
+        if(inputFileName === null) {
+            displayError('Input file must be provided');
         } else {
             try {
+                const fileID = getUUID();
                 setIsBusy(true);
                 const input = {
                     href: inputImageURL,
                     storage: psApiLib.Storage.EXTERNAL,
                   }
                   const output = {
-                    href: await getSignedURL('putObject', `output/${outputFileName}`),
+                    href: await getSignedURL('putObject', `output/${fileID}.png`),
                     storage: psApiLib.Storage.EXTERNAL,
                     type: psApiLib.MimeType.PNG
                   }
-                  await sdk.autoTone(input, output);
-                  const imageURL = await getSignedURL('getObject', `output/${outputFileName}`);
+                  await sdk.straighten(input, output);
+                  const imageURL = await getSignedURL('getObject', `output/${fileID}.png`);
                   setImageSrc(imageURL);
                   setIsBusy(false);
             } catch (e) {
                 setIsBusy(false);
                 console.log(e);
-                displayError(`Create Mask Error: ${e}`);
+                displayError(`Straighten Error: ${e}`);
             }
         }
     }
@@ -75,10 +76,10 @@ const AutoTone = () => {
         const files = await listObjects('inputs');
         const result = [];
         files.map((file, index) => {
-            if(!file.Key.endsWith('/')) {
-                const filename = file.Key.split('/')[1];
+            if(!file.Key.endsWith('/')){
+                const filename =  file.Key.split('/')[1];
                 if(getFileType(filename) === FILETYPE.image) {
-                    result.push({id: index, name: filename});
+                    result.push({id: index, name:filename});
                 }
             }
             
@@ -98,14 +99,21 @@ const AutoTone = () => {
 
     return(
         <Flex direction={'column'} gap={10}>
-            <Heading level={1}>Auto Tone</Heading>
+            <Flex direction={'column'}>
+                <Heading level={1}>Straighten Image</Heading>
+                <Text>
+                Applies the Auto Upright transformation on an image. To know more about this feature refer <Link href="https://developer.adobe.com/photoshop/photoshop-api-docs/features/#autoStraighten">Straighten</Link>
+                </Text>
+                <Heading level={3}>Instructions:</Heading>
+                <Text>In this example, we are calling the autoStraighten function.</Text>
+                <Text>You can supply additional Photoshop action files using the <Link href="/uploadtoS3">Upload Asset to S3 page</Link>.</Text>
+            </Flex>
             <Flex direction={'row'} gap={10} alignItems={'end'}>
                 <ComboBox label='Select an input image' defaultItems={fileList} isRequired onInputChange={handleInputImageSelection}>
                     {item => <Item>{item.name}</Item>}
                 </ComboBox>
-                <TextField label='Output Image File Name' name='outputFileName' isRequired onChange={setOuputFileName}/>
-                <Button variant='cta' onPress={() => autoTone()}>
-                    <Text>Auto Tone</Text>
+                <Button variant='cta' onPress={() => straighten()}>
+                    <Text>Straighten</Text>
                     {isBusy ? <ProgressCircle size='S' isIndeterminate/> : null}
                 </Button>
             </Flex>
@@ -116,7 +124,9 @@ const AutoTone = () => {
                         {inputImageURL !== null && 
                         <>
                             <Heading>Selected Input Image</Heading>
-                            <Image src={inputImageURL}/>
+                            <Flex width="100%" maxHeigt="400">
+                                <Image src={inputImageURL} objectFit="cover"/>
+                            </Flex>
                         </>
                         }
                     </Flex>
@@ -126,7 +136,9 @@ const AutoTone = () => {
                     {imageSrc !== null &&
                         <>
                             <Heading>Result from Photoshop API</Heading>
-                            <Image src={imageSrc}/>
+                            <Flex width="100%" maxHeigt="400">
+                                <Image src={imageSrc} objectFit="cover"/>
+                            </Flex>
                         </>
                     }
                 </View>
@@ -135,4 +147,4 @@ const AutoTone = () => {
         </Flex>
     );
 }
-export default AutoTone;
+export default StraightenImage;

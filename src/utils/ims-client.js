@@ -15,10 +15,14 @@
  * from Adobe.
 **************************************************************************/
 
-import {ACCESS_TOKEN_URL} from './secrets';
+import {ACCESS_TOKEN_URL, FIREFLY_ACCESS_TOKEN_URL} from './secrets';
 
-export const generateIMSToken = async () => {
-    const response = await fetch(ACCESS_TOKEN_URL);
+export const generateIMSToken = async (target='ps') => {
+    let endpointURL = ACCESS_TOKEN_URL;
+    if(target === 'firefly') {
+        endpointURL = FIREFLY_ACCESS_TOKEN_URL;
+    }
+    const response = await fetch(endpointURL);
     const payload = await response.json();
     return payload['access_token'];
 }

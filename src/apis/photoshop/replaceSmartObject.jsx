@@ -23,7 +23,7 @@ import {
     View, 
     ComboBox, 
     Item, 
-    TextField, 
+    Link, 
     Image,
     Text,
     ProgressCircle
@@ -32,12 +32,11 @@ import { getSignedURL, listObjects } from "~/utils/aws-client";
 import { initSDK } from "~/utils/ps-api-client";
 import psApiLib from '@adobe/aio-lib-photoshop-api';
 import { displayError} from "~/utils/display-utils";
-import { getFileType, FILETYPE } from "../../utils/file-utils";
+import { getFileType, FILETYPE, getUUID } from "../../utils/file-utils";
 
 const ReplaceSmartObject = () => {
     const [fileList, setFileList] = React.useState([]);
     const [inputFileName, setInputFileName] = React.useState(null);
-    const [outputFileName, setOuputFileName] = React.useState(null);
     const [imageSrc, setImageSrc] = React.useState(null);
     const [inputImageURL, setInputImageURL] = React.useState(null);
     const [isBusy, setIsBusy] = React.useState(false);
@@ -45,11 +44,12 @@ const ReplaceSmartObject = () => {
 
     const replaceSmartObject = async () => {
         const sdk = await initSDK();
-        if(inputFileName === null || outputFileName === null) {
-            displayError('Input file, preset file and output filename must be provided');
+        if(inputFileName === null) {
+            displayError('Input file must be provided');
         } else {
             try {
                 setIsBusy(true);
+                const fileID = getUUID();
                 const options = {
                     layers: [
                       {
@@ -67,12 +67,12 @@ const ReplaceSmartObject = () => {
                     storage: psApiLib.Storage.EXTERNAL,
                 }
                   const output = {
-                    href: await getSignedURL('putObject', `output/${outputFileName}`),
+                    href: await getSignedURL('putObject', `output/${fileID}.png`),
                     storage: psApiLib.Storage.EXTERNAL,
                     type: psApiLib.MimeType.PNG
                   }
                   await sdk.replaceSmartObject(input, output, options);
-                  const imageURL = await getSignedURL('getObject', `output/${outputFileName}`);
+                  const imageURL = await getSignedURL('getObject', `output/${fileID}.png`);
                   setImageSrc(imageURL);
                   setIsBusy(false);
             } catch (e) {
@@ -109,12 +109,19 @@ const ReplaceSmartObject = () => {
 
     return(
         <Flex direction={'column'} gap={10}>
-            <Heading level={1}>Replace Smart Object</Heading>
+            <Flex direction={'column'}>
+                <Heading level={1}>Replace Smart Object</Heading>
+                <Text>
+                Edits a PSD for replacing embedded smart object and then generate renditions and/or save a new psd. To know more about this feature refer <Link href="https://developer.adobe.com/photoshop/photoshop-api-docs/features/#smartobject">Smart Object.</Link>
+                </Text>
+                <Heading level={3}>Instructions:</Heading>
+                <Text>In this example, we are replacing a smart object layet called "so1". Please use "input02.psd" if you are not using your own files.</Text>
+                <Text>You can supply additional files using the <Link href="/uploadtoS3">Upload Asset to S3 page</Link>.</Text>
+            </Flex>
             <Flex direction={'row'} gap={10} alignItems={'end'}>
                 <ComboBox label='Select an input image' defaultItems={fileList} isRequired onInputChange={handleInputImageSelection}>
                     {item => <Item>{item.name}</Item>}
                 </ComboBox>
-                <TextField label='Output Image File Name' name='outputFileName' isRequired onChange={setOuputFileName}/>
                 <Button variant='cta' onPress={() => replaceSmartObject()}>
                     <Text>Replace Smart Object</Text>
                     {isBusy ? <ProgressCircle size='S' isIndeterminate/> : null}
@@ -137,7 +144,9 @@ const ReplaceSmartObject = () => {
                     {imageSrc !== null &&
                         <>
                             <Heading>Result from Photoshop API</Heading>
-                            <Image src={imageSrc}/>
+                            <Flex width="100%" maxHeigt="400">
+                                <Image src={imageSrc} objectFit="cover"/>
+                            </Flex>
                         </>
                     }
                 </View>

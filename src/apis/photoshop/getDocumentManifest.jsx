@@ -26,7 +26,8 @@ import {
     TextArea, 
     Image,
     Text,
-    ProgressCircle
+    ProgressCircle,
+    Link
 } from '@adobe/react-spectrum';
 import { getSignedURL, listObjects } from "~/utils/aws-client";
 import { initSDK } from "~/utils/ps-api-client";
@@ -38,7 +39,6 @@ const GetDocumentManifest = () => {
     const [isBusy, setIsBusy] = React.useState(false);
     const [fileList, setFileList] = React.useState([]);
     const [inputFileName, setInputFileName] = React.useState(null);
-    const [outputFileName, setOuputFileName] = React.useState(null);
     const [imageSrc, setImageSrc] = React.useState(null);
     const [inputImageURL, setInputImageURL] = React.useState(null);
 
@@ -94,7 +94,15 @@ const GetDocumentManifest = () => {
 
     return(
         <Flex direction={'column'} gap={10}>
-            <Heading level={1}>Get Document Manifest</Heading>
+            <Flex direction={'column'}>
+                <Heading level={1}>Get Document Manifest</Heading>
+                <Text>
+                Get information about the PSD document, including metadata about the file as a whole as well as detailed information about the layers included in the file. 
+                </Text>
+                <Heading level={3}>Instructions:</Heading>
+                <Text>In this example, we are gettin the manifest of the selected PSD file.</Text>
+                <Text>You can supply additional Photoshop action files using the <Link href="/uploadtoS3">Upload Asset to S3 page</Link>.</Text>
+            </Flex>
             <Flex direction={'row'} gap={10} alignItems={'end'}>
                 <ComboBox label='Select an input image' defaultItems={fileList} isRequired onInputChange={handleInputImageSelection}>
                     {item => <Item>{item.name}</Item>}

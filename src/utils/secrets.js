@@ -26,3 +26,6 @@ export const REGION = process.env.REGION;
 export const BUCKET_NAME = process.env.BUCKET_NAME;
 export const ACCESS_TOKEN_URL = process.env.ACCESS_TOKEN_URL;
 export const CLIENT_ID = process.env.CLIENT_ID;
+export const FIREFLY_ACCESS_TOKEN_URL = process.env.FIREFLY_ACCESS_TOKEN_URL;
+export const FIREFLY_API_KEY=process.env.FIREFLY_API_KEY;
+export const FIREFLY_BASE_URL=process.env.FIREFLY_BASE_URL;

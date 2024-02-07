@@ -22,8 +22,7 @@ import {
   Flex, 
   View, 
   ComboBox, 
-  Item, 
-  TextField, 
+  Item,  
   Link,
   Text,
   ProgressCircle
@@ -32,30 +31,30 @@ import { getSignedURL, listObjects } from "~/utils/aws-client";
 import { initSDK } from "~/utils/ps-api-client";
 import psApiLib from '@adobe/aio-lib-photoshop-api';
 import { displayError} from "~/utils/display-utils";
-import { getFileType, FILETYPE } from "../../utils/file-utils";
+import { getFileType, FILETYPE, getUUID } from "../../utils/file-utils";
 
 const ModifyDocument = () => {
     const [isBusy, setIsBusy] = React.useState(false);
     const [fileList, setFileList] = React.useState([]);
     const [inputFileName, setInputFileName] = React.useState(null);
-    const [outputFileName, setOuputFileName] = React.useState(null);
     const [imageSrc, setImageSrc] = React.useState(null);
     const [inputImageURL, setInputImageURL] = React.useState(null);
 
 
     const modifyDoc = async () => {
         const sdk = await initSDK();
-        if(inputFileName === null || outputFileName === null) {
+        if(inputFileName === null) {
             displayError('Input file must be provided');
         } else {
             try {
               setIsBusy(true);
+              const fileID = getUUID();
                 const input = {
                     href: inputImageURL,
                     storage: psApiLib.Storage.EXTERNAL,
                   }
                   const output = {
-                    href: await getSignedURL('putObject', `output/${outputFileName}`),
+                    href: await getSignedURL('putObject', `output/${fileID}.psd`),
                     storage: psApiLib.Storage.EXTERNAL,
                     type: psApiLib.MimeType.PSD
                   }
@@ -91,7 +90,7 @@ const ModifyDocument = () => {
                     ]
                   }
                   await sdk.modifyDocument(input, output, options);
-                  const imageURL = await getSignedURL('getObject', `output/${outputFileName}`);
+                  const imageURL = await getSignedURL('getObject', `output/${fileID}.psd`);
                   setImageSrc(imageURL);
                   setIsBusy(false);
             } catch (e) {
@@ -128,13 +127,20 @@ const ModifyDocument = () => {
 
     return(
         <Flex direction={'column'} gap={10}>
-            <Heading level={1}>NOT WORKING --- Modify Document</Heading>
+            <Flex direction={'column'}>
+                <Heading level={1}>Modify Document</Heading>
+                <Text>
+                Apply psd edits.To know more about this feature refer <Link href="https://developer.adobe.com/photoshop/photoshop-api-docs/features/#document-level-edits">Document Edits.</Link>
+                </Text>
+                <Heading level={3}>Instructions:</Heading>
+                <Text>In this example, we are making changes to layers in the selected PSD file.</Text>
+                <Text>You can supply additional Photoshop action files using the <Link href="/uploadtoS3">Upload Asset to S3 page</Link>.</Text>
+            </Flex>
             <Flex direction={'row'} gap={10} alignItems={'end'}>
                 <ComboBox label='Select an input image' defaultItems={fileList} isRequired onInputChange={handleInputImageSelection}>
                     {item => <Item>{item.name}</Item>}
                 </ComboBox>
-                <TextField label='Output Document File Name' name='outputFileName' isRequired onChange={setOuputFileName}/>
-                <Button isDisabled variant='cta' onPress={() => modifyDoc()}>
+                <Button variant='cta' onPress={() => modifyDoc()}>
                   <Text>Modify</Text>
                   {isBusy ? <ProgressCircle size='S' isIndeterminate/> : null}
                 </Button>

@@ -26,12 +26,14 @@ import {
     TextField, 
     Image,
     ProgressCircle,
-    Text} from '@adobe/react-spectrum';
+    Text,
+    Link
+} from '@adobe/react-spectrum';
 import { getSignedURL, listObjects } from "~/utils/aws-client";
 import { initSDK } from "~/utils/ps-api-client";
 import psApiLib from '@adobe/aio-lib-photoshop-api';
 import { displayError} from "~/utils/display-utils";
-import { getFileType, FILETYPE } from "../../utils/file-utils";
+import { getFileType, FILETYPE, getUUID } from "../../utils/file-utils";
 
 const ApplyPhotoshopActions = () => {
     const [isBusy, setIsBusy] = React.useState(false);
@@ -39,18 +41,18 @@ const ApplyPhotoshopActions = () => {
     const [actionList, setActionList] = React.useState([]);
     const [inputFileName, setInputFileName] = React.useState(null);
     const [inputActionFileName, setInputActionFileName] = React.useState(null);
-    const [outputFileName, setOuputFileName] = React.useState(null);
     const [imageSrc, setImageSrc] = React.useState(null);
     const [inputImageURL, setInputImageURL] = React.useState(null);
 
 
     const applyActions = async () => {
         const sdk = await initSDK();
-        if(inputFileName === null || outputFileName === null || inputActionFileName === null) {
-            displayError('Input file, preset file and output filename must be provided');
+        if(inputFileName === null || inputActionFileName === null) {
+            displayError('Input file and preset file must be provided');
         } else {
             try {
                 setIsBusy(true);
+                const outputID = getUUID();
                 const input = {
                     href: inputImageURL,
                     storage: psApiLib.Storage.EXTERNAL,
@@ -64,12 +66,12 @@ const ApplyPhotoshopActions = () => {
                     ]
                   }
                   const output = {
-                    href: await getSignedURL('putObject', `output/${outputFileName}`),
+                    href: await getSignedURL('putObject', `output/${outputID}.png`),
                     storage: psApiLib.Storage.EXTERNAL,
                     type: psApiLib.MimeType.PNG
                   }
                   await sdk.applyPhotoshopActions(input, output, options);
-                  const imageURL = await getSignedURL('getObject', `output/${outputFileName}`);
+                  const imageURL = await getSignedURL('getObject', `output/${outputID}.png`);
                   setImageSrc(imageURL);
                   setIsBusy(false);
             } catch (e) {
@@ -110,7 +112,16 @@ const ApplyPhotoshopActions = () => {
 
     return(
         <Flex direction={'column'} gap={10}>
-            <Heading level={1}>Apply Photoshop Actions</Heading>
+            
+            <Flex direction={'column'}>
+                <Heading level={1}>Apply Photoshop Actions</Heading>
+                <Text>
+                    Executes Photoshop Actions on the selected image. To know more about this feature refer <Link href="https://developer.adobe.com/photoshop/photoshop-api-docs/features/#photoshop-actions">Photoshop Actions</Link>
+                </Text>
+                <Heading level={3}>Instructions:</Heading>
+                <Text>Select an input image to apply the actions to. In this example, we are supplying the Photoshop actions in a separate file. </Text>
+                <Text>You can supply additional Photoshop action files using the <Link href="/uploadtoS3">Upload Asset to S3 page</Link>.</Text>
+            </Flex>
             <Flex direction={'row'} gap={10} alignItems={'end'}>
                 <ComboBox label='Select an input image' defaultItems={fileList} isRequired onInputChange={handleInputImageSelection}>
                     {item => <Item>{item.name}</Item>}
@@ -118,30 +129,31 @@ const ApplyPhotoshopActions = () => {
                 <ComboBox label='Select an action file' defaultItems={actionList} isRequired onInputChange={setInputActionFileName}>
                     {item => <Item>{item.name}</Item>}
                 </ComboBox>
-                <TextField label='Output Image File Name' name='outputFileName' isRequired onChange={setOuputFileName}/>
                 <Button variant='cta' onPress={() => applyActions()}>
                     {isBusy ? <ProgressCircle size='S' isIndeterminate/> : null}
-                    <Text>Apply Actions</Text>
+                    <Text> Apply Actions</Text>
                 </Button>
             </Flex>
             <Flex direction={'row'} gap={20} alignItems={'end'}>
                 <View>
                     <Flex direction={'column'} gap={10}>
-                        
                         {inputImageURL !== null && 
                         <>
                             <Heading>Selected Input Image</Heading>
-                            <Image src={inputImageURL}/>
+                            <Flex width="100%" maxHeigt="400">
+                                <Image src={inputImageURL} objectFit="cover"/>
+                            </Flex>
                         </>
                         }
                     </Flex>
-                    
                 </View>
                 <View>
                     {imageSrc !== null &&
                         <>
                             <Heading>Result from Photoshop API</Heading>
-                            <Image src={imageSrc}/>
+                            <Flex width="100%" maxHeigt="400">
+                                <Image src={imageSrc} objectFit="cover"/>
+                            </Flex>
                         </>
                     }
                 </View>
