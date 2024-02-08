@@ -19,13 +19,13 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const IMS_ORG_ID = process.env.ORG_ID;
-export const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID;
-export const SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY;
-export const REGION = process.env.REGION;
-export const BUCKET_NAME = process.env.BUCKET_NAME;
-export const ACCESS_TOKEN_URL = process.env.ACCESS_TOKEN_URL;
-export const CLIENT_ID = process.env.CLIENT_ID;
-export const FIREFLY_ACCESS_TOKEN_URL = process.env.FIREFLY_ACCESS_TOKEN_URL;
-export const FIREFLY_API_KEY=process.env.FIREFLY_API_KEY;
-export const FIREFLY_BASE_URL=process.env.FIREFLY_BASE_URL;
+export const IMS_ORG_ID = process.env.REACT_APP_ORG_ID;
+export const ACCESS_KEY_ID = process.env.REACT_APP_ACCESS_KEY_ID;
+export const SECRET_ACCESS_KEY = process.env.REACT_APP_SECRET_ACCESS_KEY;
+export const REGION = process.env.REACT_APP_REGION;
+export const BUCKET_NAME = process.env.REACT_APP_BUCKET_NAME;
+export const ACCESS_TOKEN_URL = process.env.REACT_APP_ACCESS_TOKEN_URL;
+export const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
+export const FIREFLY_ACCESS_TOKEN_URL = process.env.REACT_APP_FIREFLY_ACCESS_TOKEN_URL;
+export const FIREFLY_API_KEY=process.env.REACT_APP_FIREFLY_API_KEY;
+export const FIREFLY_BASE_URL=process.env.REACT_APP_FIREFLY_BASE_URL;
