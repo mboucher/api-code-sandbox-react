@@ -82,7 +82,7 @@ const GenerativeMatch = () => {
             <Flex direction={'row'} gap={40}>
                 <View width={300}>
                     <Flex direction={'column'} gap={20}>
-                        <FileUploader onUpload={setId}/>
+                        <FileUploader onUpload={setId} label={'Upload Image'}/>
                         <TextArea width={'100%'} label='Prompt' onChange={setPrompt}></TextArea>
                         <Button variant='cta' onPress={() => executeAPICall()}>{isGenerating ? <ProgressCircle isIndeterminate size='S'/> : <Text>Generate</Text>}</Button>
                     </Flex>
