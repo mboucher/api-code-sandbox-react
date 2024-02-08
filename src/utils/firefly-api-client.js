@@ -25,9 +25,7 @@ import { displayError } from './display-utils';
  * @returns {Object} an HTTP header object which includes a generated access token.
  */
 const buildHeader = async () => {
-    console.log('getting token')
     const accessToken = await generateIMSToken('firefly');
-    console.log(accessToken);
     const header = {
       "Authorization": `Bearer ${accessToken}`,
       "x-api-key": FIREFLY_API_KEY,

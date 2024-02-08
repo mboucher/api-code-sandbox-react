@@ -81,8 +81,10 @@ const NavBar = () => {
                     Firefly APIs
                 </ActionButton>
                 <Menu onAction={(key) => handleNavSelection(key)}>
-                    <Item>Coming Soon</Item>
-                    <Item key="uploadImage">Import Image to Firefly</Item>
+                    <Item key="textToimage">Text To Image v1</Item>
+                    <Item key="generativeMatch">Generative Match</Item>
+                    <Item key="generativeExpand">Generative Expand</Item>
+                    <Item key="generativeFill">Generative Fill</Item>
                 </Menu>
             </MenuTrigger>
             </View>

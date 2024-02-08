@@ -16,38 +16,56 @@
 **************************************************************************/
 
 import React from 'react';
-import { Flex, Button, Image, View } from '@adobe/react-spectrum';
+import { Button, Flex, Image, Text, ProgressCircle } from '@adobe/react-spectrum';
 import {FileTrigger} from 'react-aria-components';
-import { fileUpload } from '../../utils/firefly-api-client';
+import { fileUpload } from '../utils/firefly-api-client';
+import { displayError } from '../utils/display-utils';
 
-
-const ImportImage = () => {
+const FileUploader = ({onUpload, label}) => {
     const [fileSrc, setFileSrc] = React.useState(null);
+    const [fileName, setFileName] = React.useState(null);
+    const [uploadState, setUploadState] = React.useState(null);
 
     const handleFileUpload = async (selection) => {
         const files = Array.from(selection);
-        files.map(file => {
-            console.log(file.path);
+        const file = files[0];
+        try{
+            setUploadState('uploading');
+            const ref = await fileUpload(file);
+            setUploadState('uploaded');
+            
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (event) => {
                 setFileSrc(event.target.result);
             }
-            setFileSrc(file);
-            const ref = fileUpload(file);
-        })
+            setFileName(file.name);
+            onUpload(ref);
+        } catch (e) {
+            displayError(`Unable to upload file: ${e}`);
+        }
     }
-    return (
-        <Flex direction={'column'}>
+
+    return(
+        <Flex direction={'column'} gap={20}>
             <FileTrigger onSelect={(files) => handleFileUpload(files)}>
-                <Button variant='primary'>Upload File</Button>
+                <Button variant='primary'>{label}</Button>
             </FileTrigger>
-            <View maxWidth={400}>
-                <Image src={fileSrc}/>
-            </View>
+
+            {uploadState === 'uploading' &&
+                <Flex direction={'column'} alignItems={'center'}>
+                    <ProgressCircle isIndeterminate size='M'/>
+                </Flex>                
+            }
+            {uploadState === 'uploaded' && 
+                <>
+                    <Text>{fileName}</Text>
+                    <Image src={fileSrc}/>
+                </>
+            }
+            
         </Flex>
     )
-
 }
 
-export default ImportImage;
+export default FileUploader;

@@ -47,7 +47,10 @@ import StraightenImage from './apis/lightroom/straighten';
 import EditPhoto from './apis/lightroom/editPhoto';
 
 // Firefly API Pages
-import ImportImage from './apis/firefly/uploadImage';
+import TextToImage from './apis/firefly/textToImage';
+import GenerativeMatch from './apis/firefly/generativeMatch';
+import GenerativeExpand from './apis/firefly/generativeExpand';
+import GenerativeFill from './apis/firefly/generativeFill';
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement);
@@ -85,7 +88,10 @@ root.render(
                                         <Route path='modifyDocument' element={<ModifyDocument/>}/>
                                         <Route path='applyPhotoshopActions' element={<ApplyPhotoshopActions/>}/>
                                         <Route path='applyPhotoshopActionsJSON' element={<ApplyPhotoshopActionsJSON/>}/>
-                                        <Route path='uploadImage' element={<ImportImage/>}/>
+                                        <Route path='textToImage' element={<TextToImage/>}/>
+                                        <Route path='generativeMatch' element={<GenerativeMatch/>}/>
+                                        <Route path='generativeExpand' element={<GenerativeExpand/>}/>
+                                        <Route path='generativeFill' element={<GenerativeFill/>}/>
                                     </Routes>
                                 </BrowserRouter>
                             </View>
