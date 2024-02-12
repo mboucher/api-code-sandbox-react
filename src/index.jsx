@@ -52,6 +52,9 @@ import GenerativeMatch from './apis/firefly/generativeMatch';
 import GenerativeExpand from './apis/firefly/generativeExpand';
 import GenerativeFill from './apis/firefly/generativeFill';
 
+// Adobe Express Embed SDK
+import FullExpressEditor from './apis/express/fullEditor';
+
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement);
 
@@ -92,6 +95,7 @@ root.render(
                                         <Route path='generativeMatch' element={<GenerativeMatch/>}/>
                                         <Route path='generativeExpand' element={<GenerativeExpand/>}/>
                                         <Route path='generativeFill' element={<GenerativeFill/>}/>
+                                        <Route path='fullEditor' element={<FullExpressEditor/>}/>
                                     </Routes>
                                 </BrowserRouter>
                             </View>
