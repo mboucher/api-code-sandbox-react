@@ -7,7 +7,8 @@
   "author": "Marcel Boucher <mboucher@adobe.com>",
   "license": "MIT",
   "scripts": {
-    "start": "NODE_ENV=development THEME_LIGHT=true parcel ./src/index.html --host localhost --open"
+    "start": "NODE_ENV=development THEME_LIGHT=true parcel ./src/index.html --https --cert ./dev/certs/server.crt --key ./dev/certs/server.key --host localhost -p 8443 --open",
+    "clean": "rm -Rf ./dist"
   },
   "devDependencies": {
     "parcel": "^2.11.0",

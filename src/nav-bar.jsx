@@ -87,6 +87,15 @@ const NavBar = () => {
                     <Item key="generativeFill">Generative Fill</Item>
                 </Menu>
             </MenuTrigger>
+            <MenuTrigger>
+                <ActionButton isQuiet>
+                    Express SDK
+                </ActionButton>
+                <Menu onAction={(key) => handleNavSelection(key)}>
+                    <Item key="fullEditor">Full Editor</Item>
+                    <Item key="quickActions">Quick Actions</Item>
+                </Menu>
+            </MenuTrigger>
             </View>
         </Flex>
     );
