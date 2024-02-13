@@ -93,6 +93,7 @@ const NavBar = () => {
                 </ActionButton>
                 <Menu onAction={(key) => handleNavSelection(key)}>
                     <Item key="fullEditor">Full Editor</Item>
+                    <Item key="quickActions">Quick Actions</Item>
                 </Menu>
             </MenuTrigger>
             </View>

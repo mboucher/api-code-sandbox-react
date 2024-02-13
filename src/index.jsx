@@ -54,6 +54,7 @@ import GenerativeFill from './apis/firefly/generativeFill';
 
 // Adobe Express Embed SDK
 import FullExpressEditor from './apis/express/fullEditor';
+import QuickActions from './apis/express/quickActions';
 
 const rootElement = document.getElementById("root");
 const root = createRoot(rootElement);
@@ -96,6 +97,7 @@ root.render(
                                         <Route path='generativeExpand' element={<GenerativeExpand/>}/>
                                         <Route path='generativeFill' element={<GenerativeFill/>}/>
                                         <Route path='fullEditor' element={<FullExpressEditor/>}/>
+                                        <Route path='quickActions' element={<QuickActions/>}/>
                                     </Routes>
                                 </BrowserRouter>
                             </View>

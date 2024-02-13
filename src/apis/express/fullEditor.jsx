@@ -82,10 +82,10 @@ const FullExpressEditor = () => {
                 <View>
                     <Flex direction={'column'} gap={20}>
                         <Heading level={3}>Full Editor</Heading>
-                        <ComboBox label='Template Type' defaultItems={TemplateTypes} onSelectionChange={setTemplateType}>
+                        <ComboBox label='Template Type' defaultItems={TemplateTypes} onSelectionChange={setTemplateType} isRequired>
                             {item => <Item>{item.name}</Item>}
                         </ComboBox>
-                        <Button variant='cta' onPress={() => handleClick()}>Open Express Editor</Button>
+                        <Button variant='cta' onPress={() => handleClick()} isDisabled={templateType === null ? true : false}>Open Express Editor</Button>
                     </Flex>
                     
                 </View>

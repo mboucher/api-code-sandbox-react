@@ -26,9 +26,18 @@ export const initExpress = async () => {
         appName: REACT_APP_EXPRESS_APP_NAME
     };
 
+    console.log(params);
+
     const sdk = await window.CCEverywhere.initialize(params);
     return sdk;
 };
+
+export const toBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+});
 
 
 export const TemplateTypes = [
@@ -188,4 +197,42 @@ export const TemplateTypes = [
         name: 'Youtube video',
         id: 'youtube-video'
     }
-]
+];
+
+export const QuickActions = [
+    {
+        name: 'Crop image',
+        id: 'crop-image',
+        type: 'image'
+    },
+    {
+        name: 'Convert to JPG',
+        id: 'convert-to-jpg',
+        type: 'image'
+    },
+    {
+        name: 'Convert to PNG',
+        id: 'convert-to-png',
+        type: 'image'
+    },
+    {
+        name: 'Resize image',
+        id: 'resize-image',
+        type: 'image'
+    },
+    {
+        name: 'Remove background',
+        id: 'remove-background',
+        type: 'image'
+    },
+    {
+        name: 'Generate QR code',
+        id: 'generate-qr-code',
+        type: 'image'
+    },
+    {
+        name: 'Crop video',
+        id: 'crop-video',
+        type: 'image'
+    },
+];
