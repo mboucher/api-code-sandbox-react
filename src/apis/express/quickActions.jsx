@@ -25,8 +25,13 @@ import {
     ComboBox,
     Item 
 } from '@adobe/react-spectrum';
-import { initExpress, QuickActions, toBase64 } from '~/utils/express-utils';
+import { QuickActions, toBase64 } from '~/utils/express-utils';
 import DragAndDrop from '../../components/DragAndDrop';
+import { 
+    REACT_APP_EXPRESS_CLIENT_ID, 
+    REACT_APP_EXPRESS_APP_NAME,
+    REACT_APP_EXPRESS_SDK_CDN
+} from '~/utils/secrets';
 
 const ExpressQuickActions = () => {
     const [ccEverywhere, setCCEverywhere] = React.useState(null);
@@ -36,11 +41,21 @@ const ExpressQuickActions = () => {
 
      // Initialize EmbedSDK on view load
      useEffect(() => {
-        const initialize = async () => {
-           const sdk = await initExpress();
-           setCCEverywhere(sdk);
+        const params = {
+            clientId: REACT_APP_EXPRESS_CLIENT_ID, 
+            appName: REACT_APP_EXPRESS_APP_NAME
+        };
+    
+        const script = document.createElement('script');
+        script.src = REACT_APP_EXPRESS_SDK_CDN;
+        script.onload = async() => {
+            if(!window.CCEverywhere) {
+                return;
+            }
+            const sdk = await window.CCEverywhere.initialize(params);
+            setCCEverywhere(sdk);
         }
-        initialize(); 
+        document.body.appendChild(script);
     },[]);
 
     const handleFileDrop = async (file) => {
