@@ -15,23 +15,6 @@
  * from Adobe.
 **************************************************************************/
 
-import { 
-    REACT_APP_EXPRESS_CLIENT_ID, 
-    REACT_APP_EXPRESS_APP_NAME
-} from './secrets';
-
-export const initExpress = async () => {
-    const params = {
-        clientId: REACT_APP_EXPRESS_CLIENT_ID, 
-        appName: REACT_APP_EXPRESS_APP_NAME
-    };
-
-    console.log(params);
-
-    const sdk = await window.CCEverywhere.initialize(params);
-    return sdk;
-};
-
 export const toBase64 = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
