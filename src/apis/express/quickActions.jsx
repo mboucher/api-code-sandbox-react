@@ -25,13 +25,13 @@ import {
     ComboBox,
     Item 
 } from '@adobe/react-spectrum';
-import { QuickActions, toBase64 } from '~/utils/express-utils';
+import { QuickActions, toBase64 } from '../../utils/express-utils';
 import DragAndDrop from '../../components/DragAndDrop';
 import { 
     REACT_APP_EXPRESS_CLIENT_ID, 
     REACT_APP_EXPRESS_APP_NAME,
     REACT_APP_EXPRESS_SDK_CDN
-} from '~/utils/secrets';
+} from '../../utils/secrets';
 
 const ExpressQuickActions = () => {
     const [ccEverywhere, setCCEverywhere] = React.useState(null);

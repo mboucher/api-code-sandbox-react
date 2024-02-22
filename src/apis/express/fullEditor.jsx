@@ -25,12 +25,12 @@ import {
     ComboBox,
     Item 
 } from '@adobe/react-spectrum';
-import { TemplateTypes, loadExpressScript } from '~/utils/express-utils';
+import { TemplateTypes, loadExpressScript } from '../../utils/express-utils';
 import { 
     REACT_APP_EXPRESS_CLIENT_ID, 
     REACT_APP_EXPRESS_APP_NAME,
     REACT_APP_EXPRESS_SDK_CDN
-} from '~/utils/secrets';
+} from '../../utils/secrets';
 
 
 const FullExpressEditor = () => {

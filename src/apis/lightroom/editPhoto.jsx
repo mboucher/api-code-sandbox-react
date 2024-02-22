@@ -28,10 +28,10 @@ import {
     ProgressCircle,
     Link
 } from '@adobe/react-spectrum';
-import { getSignedURL, listObjects } from "~/utils/aws-client";
-import { initSDK } from "~/utils/ps-api-client";
+import { getSignedURL, listObjects } from "../../utils/aws-client";
+import { initSDK } from "../../utils/ps-api-client";
 import psApiLib from '@adobe/aio-lib-photoshop-api';
-import { displayError} from "~/utils/display-utils";
+import { displayError} from "../../utils/display-utils";
 import { getFileType, FILETYPE, getUUID } from "../../utils/file-utils";
 
 const EditPhoto = () => {

@@ -30,7 +30,7 @@ import {
     Cell
 } from '@adobe/react-spectrum';
 import {FileTrigger} from 'react-aria-components';
-import { listObjects, putObject } from "~/utils/aws-client";
+import { listObjects, putObject } from "../../utils/aws-client";
 
 const UploadAssetS3 = () => {
 
